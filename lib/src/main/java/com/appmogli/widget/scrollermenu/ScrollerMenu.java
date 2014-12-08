@@ -21,9 +21,6 @@ import android.widget.TextView;
 import java.util.Arrays;
 
 
-/**
- * Created by Madhu on 1/5/14.
- */
 public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGestureListener {
 
     private static final boolean DEBUG = false;
@@ -35,6 +32,7 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     private static final int MODE_MENU_SCROLLING = 1;
     private static final int MODE_MENU_VALUE_PROGRESSING = 2;
     private int menuItemSelectedIndex = 0;
+
 
     public static interface ScrollerMenuListener {
 
@@ -50,9 +48,8 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
          * @param progressedBy
          */
         public void onMenuItemProgressed(String[] menuItems, int index, int progressedBy);
-
-
     }
+
 
     private static final int MENU_ITEM_WIDTH_IN_DP = 120;
     private static final int MENU_ITEM_HEIGHT_IN_DP = 36;
@@ -231,7 +228,7 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
-        if(menuItems == null || menuItems.length < 2) {
+        if (menuItems == null || menuItems.length < 2) {
             Log.e(TAG, "Menu items are not provided");
             return;
         }
@@ -307,7 +304,6 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
         scrollView.setOverScrollMode(ScrollView.OVER_SCROLL_NEVER);
         scrollView.setHorizontalScrollBarEnabled(false);
         scrollView.setVerticalScrollBarEnabled(false);
-
 
         addView(scrollView);
 

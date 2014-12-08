@@ -6,14 +6,12 @@ import android.view.View;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-/**
- * Created by Madhu on 1/7/14.
- */
+
 public class ScrollerMenuScrollView extends ScrollView {
-    private static final String TAG = ScrollerMenuScrollView.class.getSimpleName();
-    private int itemHeight;
+
     private TextView[] menuItems;
     private TextView selectedText;
+    private int itemHeight;
     private int scrollHeight;
     private int selectedChild = 0;
 

@@ -7,6 +7,7 @@
     <string name="title_activity_scroller_menu">ScrollerMenuActivity</string>
     <string name="progress">Progress</string>
     <string name="selected_menu">Selected Menu</string>
+    <string name="none">None</string>
     <string-array name="menu_items">
         <item>Menu-One</item>
         <item>Menu-Two</item>
