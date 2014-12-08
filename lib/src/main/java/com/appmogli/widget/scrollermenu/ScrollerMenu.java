@@ -11,7 +11,6 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.Gravity;
-import android.view.InflateException;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -80,6 +79,11 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
         init(context, attrs);
     }
 
+    public ScrollerMenu(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init(context, attrs);
+    }
+
     private void init(Context context, AttributeSet attrs) {
         TypedArray a = context.getTheme().obtainStyledAttributes(
                 attrs,
@@ -118,11 +122,6 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
         }
 
         gestureDetector = new GestureDetector(getContext(), this);
-    }
-
-    public ScrollerMenu(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context, attrs);
     }
 
     public ScrollerMenu(Context context) {
