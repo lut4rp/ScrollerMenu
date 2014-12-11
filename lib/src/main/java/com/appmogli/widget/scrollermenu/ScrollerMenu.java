@@ -23,19 +23,7 @@ import java.util.Arrays;
 
 public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGestureListener {
 
-    private static final boolean DEBUG = false;
-    private static final String TAG = ScrollerMenu.class.getSimpleName();
-
-    private ScrollerMenuListener menuListener;
-
-    private static final int MODE_NONE = 0;
-    private static final int MODE_MENU_SCROLLING = 1;
-    private static final int MODE_MENU_VALUE_PROGRESSING = 2;
-    private int menuItemSelectedIndex = 0;
-
-
     public static interface ScrollerMenuListener {
-
         /**
          * @param menuItems
          * @param index
@@ -51,6 +39,16 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     }
 
 
+    private enum MENU_MODE {
+        NONE, SCROLLING, VALUE_PROGRESSING
+    }
+
+
+    private ScrollerMenuListener menuListener;
+
+    private static final boolean DEBUG = false;
+    private static final String TAG = ScrollerMenu.class.getSimpleName();
+
     private static final int MENU_ITEM_WIDTH_IN_DP = 120;
     private static final int MENU_ITEM_HEIGHT_IN_DP = 36;
     private static final int MENU_ITEM_DIVIDER_MARGIN_IN_DP = 2;
@@ -59,6 +57,7 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     private Drawable menuItemDefaultBackground;
     private Drawable menuItemSelectedBackground;
     private Drawable menuPanelBackground;
+    private int menuItemSelectedIndex = 0;
     private int menuItemTextColor;
     private float menuItemWidth;
     private float menuItemHeight;
@@ -67,7 +66,7 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     private LinearLayout menuPanel;
     private GestureDetector gestureDetector = null;
     private TextView selectedMenu;
-    private int mode;
+    private MENU_MODE mode;
 
     private Handler handler = new Handler();
 
@@ -79,6 +78,14 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     public ScrollerMenu(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs);
+    }
+
+    public ScrollerMenu(Context context) {
+        super(context);
+        menuItemDefaultBackground = context.getResources().getDrawable(R.drawable.scroller_menu_item_default_background);
+        menuItemWidth = MENU_ITEM_WIDTH_IN_DP;
+        menuItemHeight = MENU_ITEM_HEIGHT_IN_DP;
+        menuItemTextColor = MENU_ITEM_TEXT_COLOR;
     }
 
     private void init(Context context, AttributeSet attrs) {
@@ -105,7 +112,7 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
             menuItemWidth = a.getDimension(R.styleable.ScrollerMenu_scrollerMenuItemWidth, MENU_ITEM_WIDTH_IN_DP);
             menuItemHeight = a.getDimension(R.styleable.ScrollerMenu_scrollerMenuItemHeight, MENU_ITEM_HEIGHT_IN_DP);
             menuItemTextColor = a.getColor(R.styleable.ScrollerMenu_scrollerMenuItemTextColor, context.getResources().getColor(R.color.scroller_menu_item_text_color));
-            CharSequence[] menuArray = (CharSequence[]) a.getTextArray(R.styleable.ScrollerMenu_scrollerMenuItems);
+            CharSequence[] menuArray = a.getTextArray(R.styleable.ScrollerMenu_scrollerMenuItems);
             if (menuArray != null && menuArray.length > 2) {
                 menuItems = new String[menuArray.length];
                 int i = 0;
@@ -119,14 +126,6 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
         }
 
         gestureDetector = new GestureDetector(getContext(), this);
-    }
-
-    public ScrollerMenu(Context context) {
-        super(context);
-        menuItemDefaultBackground = context.getResources().getDrawable(R.drawable.scroller_menu_item_default_background);
-        menuItemWidth = MENU_ITEM_WIDTH_IN_DP;
-        menuItemHeight = MENU_ITEM_HEIGHT_IN_DP;
-        menuItemTextColor = MENU_ITEM_TEXT_COLOR;
     }
 
     public void setMenuItems(String[] items) {
@@ -169,7 +168,7 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
             if (isMenuScroling()) {
                 notifyMenuItemSelected();
             }
-            mode = MODE_NONE;
+            mode = MENU_MODE.NONE;
             hidePanel();
             return false;
         }
@@ -177,11 +176,11 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     }
 
     private boolean isMenuValueProgressing() {
-        return mode == MODE_MENU_VALUE_PROGRESSING;
+        return mode == MENU_MODE.VALUE_PROGRESSING;
     }
 
     private boolean isMenuScroling() {
-        return mode == MODE_MENU_SCROLLING;
+        return mode == MENU_MODE.SCROLLING;
     }
 
     private void hidePanel() {
@@ -346,9 +345,9 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent2, float scrollX, float scrollY) {
         if (isModeNone()) {
             if (Math.abs(scrollX) > Math.abs(scrollY)) {
-                mode = MODE_MENU_VALUE_PROGRESSING;
+                mode = MENU_MODE.VALUE_PROGRESSING;
             } else {
-                mode = MODE_MENU_SCROLLING;
+                mode = MENU_MODE.SCROLLING;
             }
         }
         if (isMenuValueProgressing()) {
@@ -367,7 +366,7 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     }
 
     private boolean isModeNone() {
-        return mode == MODE_NONE;
+        return mode == MENU_MODE.NONE;
     }
 
     @Override
