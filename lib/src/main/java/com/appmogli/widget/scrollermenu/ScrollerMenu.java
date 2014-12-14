@@ -62,7 +62,7 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     private float menuItemWidth;
     private float menuItemHeight;
     private String[] menuItems;
-    private ScrollerMenuScrollView scrollView;
+    private ScrollerMenuScrollView mScrollerMenuScrollView;
     private LinearLayout menuPanel;
     private GestureDetector mGestureDetector = null;
     private TextView selectedMenu;
@@ -163,7 +163,7 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            if (isMenuScroling()) {
+            if (isMenuScrolling()) {
                 notifyMenuItemSelected();
             }
             mode = MENU_MODE.NONE;
@@ -173,29 +173,33 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
         return mGestureDetector.onTouchEvent(event);
     }
 
+    private boolean isModeNone() {
+        return mode == MENU_MODE.NONE;
+    }
+
+    private boolean isMenuScrolling() {
+        return mode == MENU_MODE.SCROLLING;
+    }
+
     private boolean isMenuValueProgressing() {
         return mode == MENU_MODE.VALUE_PROGRESSING;
     }
 
-    private boolean isMenuScroling() {
-        return mode == MENU_MODE.SCROLLING;
-    }
-
     private void hidePanel() {
-        scrollView.setVisibility(View.INVISIBLE);
+        mScrollerMenuScrollView.setVisibility(View.INVISIBLE);
         selectedMenu.setVisibility(View.INVISIBLE);
     }
 
     private void showPanel() {
-        scrollView.setVisibility(View.VISIBLE);
+        mScrollerMenuScrollView.setVisibility(View.VISIBLE);
         selectedMenu.setVisibility(View.VISIBLE);
     }
 
     private void notifyMenuItemProgressed(final int progress) {
         if (DEBUG) {
             Log.d(TAG, "Progress changed by:" + progress + " for menu item:" + menuItems[menuItemSelectedIndex]);
-
         }
+
         if (this.menuListener != null) {
             handler.post(new Runnable() {
                 @Override
@@ -207,7 +211,7 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
     }
 
     private void notifyMenuItemSelected() {
-        menuItemSelectedIndex = scrollView.getSelectedChild();
+        menuItemSelectedIndex = mScrollerMenuScrollView.getSelectedChild();
         if (DEBUG) {
             Log.d(TAG, "Menu item selected is:" + this.menuItems[menuItemSelectedIndex]);
         }
@@ -221,20 +225,37 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
         }
     }
 
+    public void setMenuListener(ScrollerMenuListener listener) {
+        this.menuListener = listener;
+    }
+
+    public void setSelectedMenuItem(int selectedMenuItem) {
+        this.menuItemSelectedIndex = selectedMenuItem;
+    }
+
+    /**
+     * @return index of the menu item which is selected
+     */
+    public int getSelectedMenuItem() {
+        return this.menuItemSelectedIndex;
+    }
+
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
+    public boolean isInEditMode() {
+        return false;
+    }
+
+    @Override
+    protected void onSizeChanged(int neww, int newh, int oldw, int oldh) {
+        super.onSizeChanged(neww, newh, oldw, oldh);
 
         if (menuItems == null || menuItems.length < 2) {
             Log.e(TAG, "Menu items are not provided");
             return;
         }
 
-        int viewWidth = w;
-        int viewHeight = h;
-
         Context context = getContext();
-        scrollView = new ScrollerMenuScrollView(context);
+        mScrollerMenuScrollView = new ScrollerMenuScrollView(context);
         LinearLayout completeScrollPanel = new LinearLayout(context);
         menuPanel = new LinearLayout(context);
 
@@ -293,22 +314,22 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
         completeScrollPanel.addView(menuPanelBelowView);
 
         RelativeLayout.LayoutParams scrollParams = new LayoutParams(Math.round(menuPanelWidth), Math.round(totalMenuPanelAboveHeight) + Math.round(menuPanelHeight));
-        scrollParams.topMargin = Math.round(viewHeight / 2f) - Math.round(totalMenuPanelAboveHeight);
+        scrollParams.topMargin = Math.round(newh / 2f) - Math.round(totalMenuPanelAboveHeight);
         scrollParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        scrollView.setLayoutParams(scrollParams);
+        mScrollerMenuScrollView.setLayoutParams(scrollParams);
 
-        scrollView.addView(completeScrollPanel);
-        scrollView.setOverScrollMode(ScrollView.OVER_SCROLL_NEVER);
-        scrollView.setHorizontalScrollBarEnabled(false);
-        scrollView.setVerticalScrollBarEnabled(false);
+        mScrollerMenuScrollView.addView(completeScrollPanel);
+        mScrollerMenuScrollView.setOverScrollMode(ScrollView.OVER_SCROLL_NEVER);
+        mScrollerMenuScrollView.setHorizontalScrollBarEnabled(false);
+        mScrollerMenuScrollView.setVerticalScrollBarEnabled(false);
 
-        addView(scrollView);
+        addView(mScrollerMenuScrollView);
 
         //lets create selected item
         selectedMenu = new TextView(context);
         LayoutParams tvParams = new LayoutParams(Math.round(menuPanelWidth), Math.round(height));
         tvParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        tvParams.topMargin = Math.round(viewHeight / 2f);
+        tvParams.topMargin = Math.round(newh / 2f);
         selectedMenu.setBackgroundDrawable(menuItemSelectedBackground);
         selectedMenu.setText(menuItems[0]);
         selectedMenu.setGravity(Gravity.CENTER);
@@ -318,25 +339,10 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
         selectedMenu.setTextColor(Color.WHITE);
         menuTvs[0].setVisibility(View.INVISIBLE);
         addView(selectedMenu);
-        scrollView.setMenuPanel(menuTvs, height, selectedMenu, Math.round(totalMenuPanelAboveHeight));
+        mScrollerMenuScrollView.setMenuPanel(menuTvs, height, selectedMenu, Math.round(totalMenuPanelAboveHeight));
 
-        scrollView.setVisibility(View.INVISIBLE);
+        mScrollerMenuScrollView.setVisibility(View.INVISIBLE);
         selectedMenu.setVisibility(View.INVISIBLE);
-    }
-
-    @Override
-    public boolean onDown(MotionEvent motionEvent) {
-        return true;
-    }
-
-    @Override
-    public void onShowPress(MotionEvent motionEvent) {
-
-    }
-
-    @Override
-    public boolean onSingleTapUp(MotionEvent motionEvent) {
-        return false;
     }
 
     @Override
@@ -357,14 +363,25 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
         } else {
             //scroll menu
             showPanel();
-            scrollView.smoothScrollBy((int) scrollX, (int) scrollY);
+            mScrollerMenuScrollView.smoothScrollBy((int) scrollX, (int) scrollY);
         }
 
         return true;
     }
 
-    private boolean isModeNone() {
-        return mode == MENU_MODE.NONE;
+    @Override
+    public boolean onDown(MotionEvent motionEvent) {
+        return true;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent motionEvent) {
+        return false;
     }
 
     @Override
@@ -374,26 +391,6 @@ public class ScrollerMenu extends RelativeLayout implements GestureDetector.OnGe
 
     @Override
     public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent2, float scrollX, float scrollY) {
-        return false;
-    }
-
-    public void setMenuListener(ScrollerMenuListener listener) {
-        this.menuListener = listener;
-    }
-
-    public void setSelectedMenuItem(int selectedMenuItem) {
-        this.menuItemSelectedIndex = selectedMenuItem;
-    }
-
-    /**
-     * @return index of the menu item which is selected
-     */
-    public int getSelectedMenuItem() {
-        return this.menuItemSelectedIndex;
-    }
-
-    @Override
-    public boolean isInEditMode() {
         return false;
     }
 }
